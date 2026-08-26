@@ -11,6 +11,8 @@
 #include <FS.h>
 #include <SPIFFS.h>
 
+//Sensores utilizados: MQ7, AHT20, MH-Z19
+
 // --- Credenciales y Servidor ---
 const char* ssid = "Proximo a Editar";         
 const char* password = "Proximo a Editar"; 
@@ -38,7 +40,7 @@ Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 #define LEER_CO2() mhz19.getCO2()
 
 // --- Objetos ---
-Adafruit_AHTX0 aht;
+Adafruit_AHTX0 aht;  
 MHZ19 mhz19;
 HardwareSerial mhzSerial(2);
 
@@ -119,7 +121,7 @@ void loop() {
   // 1. Atender el servidor web inmediatamente
   server.handleClient();
 
-  // 2. Parpadeo del LED_TEST
+  // 2. Parpadeo del LED_TEST  //Prueba agregada para verificar que el loop se ejecuta correctamente
   Blink_Test();
 
   // 3. Tarea programada de sensores y pantalla (cada 2s)
@@ -156,7 +158,7 @@ void ActualizarSensoresYPantalla() {
   temperatura = tempEvent.temperature;
   humedad = humEvent.relative_humidity;
 
-  // Actualización TFT 
+  // Actualización pantalla tft con los datos de los sensores
   tft.setCursor(10, 20);  tft.print("Gases: "); tft.print(valorGases); tft.print("    ");
   tft.setCursor(10, 60);  tft.print("Temp:  "); tft.print(temperatura, 1); tft.print(" C  ");
   tft.setCursor(10, 100); tft.print("Hum:   "); tft.print(humedad, 1); tft.print(" %  ");
