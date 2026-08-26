@@ -10,12 +10,13 @@
 #include <WebServer.h>
 #include <FS.h>
 #include <SPIFFS.h>
+#include "secrets.h"
 
 //Sensores utilizados: MQ7, AHT20, MH-Z19
 
 // --- Credenciales y Servidor ---
-const char* ssid = "Proximo a Editar";         
-const char* password = "Proximo a Editar"; 
+const char* ssid = WIFI_SSID;         
+const char* password = WIFI_PASS; 
 WebServer server(80);
 String htmlCache = ""; 
 
