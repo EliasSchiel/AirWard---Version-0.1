@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calidad del Aire</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        @keyframes pulse-once {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            }
+        }
+        .pulse-on-update {
+            animation: pulse-once 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex flex-col items-center justify-center min-h-screen p-4">
+
+    <!-- Título y subtítulo -->
+    <div class="text-center mb-12">
+        <h1 class="text-4xl md:text-5xl font-bold mb-2">Monitor de Calidad del Aire</h1>
+        <p class="text-lg md:text-xl text-gray-400">Datos en tiempo real desde tu ESP32</p>
+    </div>
+
+    <!-- Contenedor de las tarjetas de los sensores -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-5xl">
+
+        <!-- Tarjeta de CO2 -->
+        <div id="co2-card" class="bg-gray-800 p-8 rounded-2xl shadow-lg transition-transform duration-300 hover:scale-105 transform">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-4xl">💨</span>
+                <p class="text-sm text-gray-400">CO2</p>
+            </div>
+            <div class="flex flex-col items-start">
+                <p class="text-5xl font-bold" id="co2-value">--</p>
+                <p class="text-xl text-gray-400">ppm</p>
+            </div>
+        </div>
+
+        <!-- Tarjeta de Temperatura -->
+        <div id="temp-card" class="bg-gray-800 p-8 rounded-2xl shadow-lg transition-transform duration-300 hover:scale-105 transform">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-4xl">🌡️</span>
+                <p class="text-sm text-gray-400">Temperatura</p>
+            </div>
+            <div class="flex flex-col items-start">
+                <p class="text-5xl font-bold" id="temp-value">--</p>
+                <p class="text-xl text-gray-400">°C</p>
+            </div>
+        </div>
+
+        <!-- Tarjeta de Humedad -->
+        <div id="humidity-card" class="bg-gray-800 p-8 rounded-2xl shadow-lg transition-transform duration-300 hover:scale-105 transform">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-4xl">💧</span>
+                <p class="text-sm text-gray-400">Humedad</p>
+            </div>
+            <div class="flex flex-col items-start">
+                <p class="text-5xl font-bold" id="humidity-value">--</p>
+                <p class="text-xl text-gray-400">%</p>
+            </div>
+        </div>
+
+        
+    </div>
+
+    <script>
+        
+        async function obtenerDatos() {
+            try {
+            const respuesta = await fetch('/data');
+                const datos = await respuesta.json();
+
+                // Actualizar valores en la página
+                document.getElementById('co2-value').textContent = datos.co2;
+                document.getElementById('temp-value').textContent = datos.temperatura.toFixed(1);
+                document.getElementById('humidity-value').textContent = datos.humedad.toFixed(1);
+
+                // Animación visual al actualizar
+                document.getElementById('co2-card').classList.add('pulse-on-update');
+                document.getElementById('temp-card').classList.add('pulse-on-update');
+                document.getElementById('humidity-card').classList.add('pulse-on-update');
+
+                // Quitar animación después de un tiempo
+                setTimeout(() => {
+                    document.getElementById('co2-card').classList.remove('pulse-on-update');
+                    document.getElementById('temp-card').classList.remove('pulse-on-update');
+                    document.getElementById('humidity-card').classList.remove('pulse-on-update');
+                }, 500);
+    
+
+            } catch (error) {
+            console.error('Error al obtener datos:', error);
+            }
+        }
+
+
+        // Actualizar cada 2 segundos
+        setInterval(obtenerDatos, 2000);
+    </script>
+
+</body>
+</html>
