@@ -48,6 +48,7 @@ HardwareSerial mhzSerial(2);
 // --- Tiempo ---
 const unsigned long INTERVALO_LECTURA = 2000; 
 const unsigned long INTERVALO_BLINK   = 500;  
+const unsigned long INTERVALO_CALENTADO_SENSORMQ7= 30000;
 
 unsigned long ultimoTiempoLectura = 0;
 
@@ -73,17 +74,51 @@ void setup() {
   tft.fillScreen(ILI9341_BLACK);
   tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK); 
   tft.setTextSize(2);
+  tft.println("Sistema encendiendo...");
+
 
   // 2. Sensores
+  // AHT10
   Wire.begin(13, 14);
-  aht.begin(&Wire);
+  bool ahtOk = aht.begin(&Wire);
+  if (!ahtOk) {
+    tft.setCursor(10, 180);
+    tft.setTextColor(ILI9341_RED);
+    tft.print("Error: sensor AHT20 no detectado");
+    tft.setTextColor(ILI9341_WHITE);
+  }
+  //MHZ19
   mhzSerial.begin(9600, SERIAL_8N1, MHZ_RX, MHZ_TX);
   mhz19.begin(mhzSerial);
+  //Esperado que sensor MQ7 se caliente antes de la primera lectura
+  delay(INTERVALO_CALENTADO_SENSORMQ7);
 
   // 3. WiFi
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
+  tft.setCursor(10, 20);
+  tft.print("Conectando WiFi...");
+
+  WiFi.begin(WIFI_SSID, WIFI_PASS);
+  unsigned long inicioConexion = millis();
+  const unsigned long TIMEOUT_WIFI = 15000; 
+
+  while (WiFi.status() != WL_CONNECTED && millis() - inicioConexion < TIMEOUT_WIFI) {
     delay(250);
+    Serial.print(".");
+  }
+
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("\nConectado a WiFi. IP: " + WiFi.localIP().toString());
+    tft.fillScreen(ILI9341_BLACK);
+    tft.setCursor(10, 20);
+    tft.print("WiFi OK: ");
+    tft.print(WiFi.localIP());
+  } else {
+    tft.fillScreen(ILI9341_BLACK);
+    tft.setCursor(10, 20);
+    tft.setTextColor(ILI9341_RED);
+    tft.print("Sin WiFi - modo offline");
+    tft.setTextColor(ILI9341_WHITE);
+    // Funcionamiento normal sin wifi, solo con pantalla y sensores
   }
 
   // 4. Cargar HTML en RAM
